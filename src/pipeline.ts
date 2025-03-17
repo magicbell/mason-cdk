@@ -475,7 +475,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     // we need the jobId to reference the outputs later
     this.assetHashMap[assetId] = jobId;
     fileContents.push(
-      `echo '::set-output name=${ASSET_HASH_NAME}::${assetId}'`,
+      `echo "${ASSET_HASH_NAME}=${assetId}" >> $GITHUB_OUTPUT`,
     );
 
     const publishStepFile = path.join(
