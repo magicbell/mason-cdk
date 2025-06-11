@@ -440,9 +440,6 @@ export class MasonGitHubWorkflow extends PipelineBase {
       throw new Error('Asset Publish step must have at least 1 asset');
     }
 
-    const installSuffix = this.cdkCliVersion
-      ? `@${this.cdkCliVersion}`
-      : '';
     const cdkoutDir = options.assemblyDir;
     const jobId = node.uniqueId;
     const assetId = assets[0].assetId;
@@ -466,7 +463,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
       );
     const fileContents: string[] = ['set -ex'].concat(
       assets.map((asset) => {
-        return `npx cdk-assets --path "${relativeToAssembly(
+        return `npx -y cdk-assets@${this.cdkCliVersion || 'latest'} --path "${relativeToAssembly(
           asset.assetManifestPath,
         )}" --verbose publish "${asset.assetSelector}"`;
       }),
@@ -522,10 +519,6 @@ export class MasonGitHubWorkflow extends PipelineBase {
             with: {
               'node-version-file': '.node-version',
             },
-          },
-          {
-            name: 'Install',
-            run: `npm install --no-save cdk-assets${installSuffix}`,
           },
           ...this.stepsToConfigureAws(this.publishAssetsAuthRegion),
           ...dockerLoginSteps,
