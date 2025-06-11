@@ -514,6 +514,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
           [ASSET_HASH_NAME]: `\${{ steps.Publish.outputs.${ASSET_HASH_NAME} }}`,
         },
         steps: [
+          ...this.stepsToCheckout(),
           ...this.stepsToDownloadAssembly(CDKOUT_ARTIFACT),
           {
             name: 'Setup Node',
