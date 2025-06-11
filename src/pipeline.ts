@@ -516,6 +516,13 @@ export class MasonGitHubWorkflow extends PipelineBase {
         steps: [
           ...this.stepsToDownloadAssembly(CDKOUT_ARTIFACT),
           {
+            name: 'Setup Node',
+            uses: 'actions/setup-node@v4',
+            with: {
+              'node-version-file': '.node-version',
+            },
+          },
+          {
             name: 'Install',
             run: `npm install --no-save cdk-assets${installSuffix}`,
           },
@@ -793,9 +800,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     step: GitHubActionStep,
   ): Job {
     return {
-      id:
-                this.namer?.gitHubActionJobName(node.uniqueId, step) ??
-                node.uniqueId,
+      id: this.namer?.gitHubActionJobName(node.uniqueId, step) ?? node.uniqueId,
       definition: {
         name: step.id,
         ...this.jobSettings,
