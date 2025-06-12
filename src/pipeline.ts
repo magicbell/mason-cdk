@@ -45,62 +45,62 @@ import * as path from 'path';
 const CDKOUT_ARTIFACT = 'cdk.out';
 const ASSET_HASH_NAME = 'asset-hash';
 const SHA_STRING =
-    "${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha ||  github.sha  }}";
+  "${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha ||  github.sha  }}";
 const CACHE_PREFIX =
-    "${{ github.event_name == 'workflow_run' && '-production-' ||  ''}}";
+  "${{ github.event_name == 'workflow_run' && '-production-' ||  ''}}";
 
 export interface ExtendedJobSettings extends OriginalJobSettings {
   /**
-     * Timeout in minutes after which this job will be canceled if it hasn't finished.
-     */
+   * Timeout in minutes after which this job will be canceled if it hasn't finished.
+   */
   readonly timeoutMinutes?: number;
 }
 
 export interface IMasonNamer {
   /**
-     * Use this function to set the display name of stack deployment jobs. By default, the name of the job will be the
-     * name of the stack. Sometimes we may want the name to be different. For example, if the stack name is dynamic but
-     * the pipeline code should remain static.
-     *
-     * This will be used for stack delpoyment job names and its display name.
-     *
-     * @return string stack display name or undefined for default
-     */
+   * Use this function to set the display name of stack deployment jobs. By default, the name of the job will be the
+   * name of the stack. Sometimes we may want the name to be different. For example, if the stack name is dynamic but
+   * the pipeline code should remain static.
+   *
+   * This will be used for stack delpoyment job names and its display name.
+   *
+   * @return string stack display name or undefined for default
+   */
   stackDisplayName(
     originalName: string,
-    stack: StackDeployment,
+    stack: StackDeployment
   ): string | undefined;
 
   /**
-     * Use this function to override deployed stack names. This is useful when the stack name is dynamic but the pipeline
-     * code should remain static.
-     *
-     * @return string stack name or undefined for default
-     */
+   * Use this function to override deployed stack names. This is useful when the stack name is dynamic but the pipeline
+   * code should remain static.
+   *
+   * @return string stack name or undefined for default
+   */
   stackName(originalName: string, stack: StackDeployment): string | undefined;
 
   /**
-     * Use this function to override GitHub Actions job names. This is useful when the job name is dynamic but the
-     * pipeline code should remain static.
-     *
-     * @return string job name or undefined for default
-     */
+   * Use this function to override GitHub Actions job names. This is useful when the job name is dynamic but the
+   * pipeline code should remain static.
+   *
+   * @return string job name or undefined for default
+   */
   gitHubActionJobName(originalName: string, step: Step): string | undefined;
 }
 
 export interface MasonGitHubWorkflowProps extends GitHubWorkflowProps {
   /**
-     * Additional job level settings that will be applied to all jobs in the workflow,
-     * including synth and asset deploy jobs. Currently, the only valid setting
-     * is 'timeoutMinutes'. You can use this to run jobs only in specific repositories.
-     *
-     * @see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-only-run-job-for-specific-repository
-     */
+   * Additional job level settings that will be applied to all jobs in the workflow,
+   * including synth and asset deploy jobs. Currently, the only valid setting
+   * is 'timeoutMinutes'. You can use this to run jobs only in specific repositories.
+   *
+   * @see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-only-run-job-for-specific-repository
+   */
   readonly extendedJobSettings?: ExtendedJobSettings;
 
   /**
-     * Optional object that can name jobs and stacks. This can be useful to avoid name conflicts.
-     */
+   * Optional object that can name jobs and stacks. This can be useful to avoid name conflicts.
+   */
   readonly namer?: IMasonNamer;
 }
 
@@ -108,12 +108,12 @@ export interface MasonAddGitHubStageOptions
   extends AddStageOpts,
   GitHubCommonProps {
   /**
-     * Additional job level settings that will be applied to all jobs in the workflow,
-     * including synth and asset deploy jobs. Currently, the only valid setting
-     * is 'timeoutMinutes'. You can use this to run jobs only in specific repositories.
-     *
-     * @see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-only-run-job-for-specific-repository
-     */
+   * Additional job level settings that will be applied to all jobs in the workflow,
+   * including synth and asset deploy jobs. Currently, the only valid setting
+   * is 'timeoutMinutes'. You can use this to run jobs only in specific repositories.
+   *
+   * @see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-only-run-job-for-specific-repository
+   */
   readonly extendedJobSettings?: ExtendedJobSettings;
 }
 
@@ -157,11 +157,10 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
     this.dockerCredentials = props.dockerCredentials ?? [];
 
-    this.workflowPath =
-            props.workflowPath ?? '.github/workflows/deploy.yml';
+    this.workflowPath = props.workflowPath ?? '.github/workflows/deploy.yml';
     if (
       !this.workflowPath.endsWith('.yml') &&
-            !this.workflowPath.endsWith('.yaml')
+      !this.workflowPath.endsWith('.yaml')
     ) {
       throw new Error('workflow file is expected to be a yaml file');
     }
@@ -179,15 +178,14 @@ export class MasonGitHubWorkflow extends PipelineBase {
     };
 
     this.runner = props.runner ?? github.Runner.UBUNTU_LATEST;
-    this.publishAssetsAuthRegion =
-            props.publishAssetsAuthRegion ?? 'us-west-2';
+    this.publishAssetsAuthRegion = props.publishAssetsAuthRegion ?? 'us-west-2';
 
     this.namer = props.namer;
   }
 
   /**
-     * Parse AWS credential configuration from deprecated properties For backwards compatibility.
-     */
+   * Parse AWS credential configuration from deprecated properties For backwards compatibility.
+   */
   private getAwsCredentials(props: MasonGitHubWorkflowProps) {
     if (props.gitHubActionRoleArn) {
       if (props.awsCreds) {
@@ -217,11 +215,11 @@ export class MasonGitHubWorkflow extends PipelineBase {
   }
 
   /**
-     * Deploy a single Stage by itself with options for further GitHub configuration.
-     *
-     * Add a Stage to the pipeline, to be deployed in sequence with other Stages added to the pipeline.
-     * All Stacks in the stage will be deployed in an order automatically determined by their relative dependencies.
-     */
+   * Deploy a single Stage by itself with options for further GitHub configuration.
+   *
+   * Add a Stage to the pipeline, to be deployed in sequence with other Stages added to the pipeline.
+   * All Stacks in the stage will be deployed in an order automatically determined by their relative dependencies.
+   */
   public addStageWithGitHubOptions(
     stage: Stage,
     options?: MasonAddGitHubStageOptions,
@@ -322,15 +320,11 @@ export class MasonGitHubWorkflow extends PipelineBase {
       'cdk-pipelines-github:diffProtection',
     );
     const diffProtection =
-            contextValue === 'false' ? false : (contextValue ?? true);
-    if (
-      diffProtection &&
-            process.env.GITHUB_WORKFLOW === this.workflowName
-    ) {
+      contextValue === 'false' ? false : (contextValue ?? true);
+    if (diffProtection && process.env.GITHUB_WORKFLOW === this.workflowName) {
       if (
         !existsSync(this.workflowPath) ||
-                this.workflowFile.toYaml() !==
-                    readFileSync(this.workflowPath, 'utf8')
+        this.workflowFile.toYaml() !== readFileSync(this.workflowPath, 'utf8')
       ) {
         // eslint-disable-next-line no-console
         console.log(
@@ -370,14 +364,14 @@ export class MasonGitHubWorkflow extends PipelineBase {
     const renderedOutputs: Record<string, string> = {};
     for (const output of outputs) {
       renderedOutputs[output.outputName] =
-                `\${{ steps.${output.stepId}.outputs.${output.outputName} }}`;
+        `\${{ steps.${output.stepId}.outputs.${output.outputName} }}`;
     }
     return renderedOutputs;
   }
 
   /**
-     * Make an action from the given node and/or step
-     */
+   * Make an action from the given node and/or step
+   */
   private jobForNode(node: AGraphNode, options: Context): Job | undefined {
     switch (node.data?.type) {
       // Nothing for these, they are groupings (shouldn't even have popped up here)
@@ -389,17 +383,13 @@ export class MasonGitHubWorkflow extends PipelineBase {
         );
 
       case 'self-update':
-        throw new Error(
-          'GitHub Workflows does not support self mutation',
-        );
+        throw new Error('GitHub Workflows does not support self mutation');
 
       case 'publish-assets':
         return this.jobForAssetPublish(node, node.data.assets, options);
 
       case 'prepare':
-        throw new Error(
-          '"prepare" is not supported by GitHub Workflows',
-        );
+        throw new Error('"prepare" is not supported by GitHub Workflows');
 
       case 'execute':
         return this.jobForDeploy(
@@ -448,7 +438,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     const dockerLoginSteps: JobStep[] = [];
     if (
       node.uniqueId.includes('DockerAsset') &&
-            this.dockerCredentials.length > 0
+      this.dockerCredentials.length > 0
     ) {
       for (const creds of this.dockerCredentials) {
         dockerLoginSteps.push(...this.stepsToConfigureDocker(creds));
@@ -457,10 +447,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
     // create one file and make one step
     const relativeToAssembly = (p: string) =>
-      path.posix.join(
-        cdkoutDir,
-        path.relative(path.resolve(cdkoutDir), p),
-      );
+      path.posix.join(cdkoutDir, path.relative(path.resolve(cdkoutDir), p));
     const fileContents: string[] = ['set -ex'].concat(
       assets.map((asset) => {
         return `npx -y cdk-assets@${this.cdkCliVersion || 'latest'} --path "${relativeToAssembly(
@@ -471,14 +458,9 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
     // we need the jobId to reference the outputs later
     this.assetHashMap[assetId] = jobId;
-    fileContents.push(
-      `echo "${ASSET_HASH_NAME}=${assetId}" >> $GITHUB_OUTPUT`,
-    );
+    fileContents.push(`echo "${ASSET_HASH_NAME}=${assetId}" >> $GITHUB_OUTPUT`);
 
-    const publishStepFile = path.join(
-      cdkoutDir,
-      `publish-${jobId}-step.sh`,
-    );
+    const publishStepFile = path.join(cdkoutDir, `publish-${jobId}-step.sh`);
     mkdirSync(path.dirname(publishStepFile), { recursive: true });
     writeFileSync(publishStepFile, fileContents.join('\n'), {
       encoding: 'utf-8',
@@ -565,15 +547,13 @@ export class MasonGitHubWorkflow extends PipelineBase {
     };
 
     const params: Record<string, any> = {
-      'name':
-                this.namer?.stackName(stack.stackName, stack) ??
-                stack.stackName,
+      'name': this.namer?.stackName(stack.stackName, stack) ?? stack.stackName,
       'template': replaceAssetHash(resolve(stack.templateUrl)),
       'no-fail-on-empty-changeset': '1',
     };
 
     const capabilities =
-            this.stackProperties[stack.stackArtifactId]?.capabilities;
+      this.stackProperties[stack.stackArtifactId]?.capabilities;
     if (capabilities) {
       params.capabilities = Array(capabilities).join(',');
     }
@@ -591,8 +571,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
         : node.uniqueId,
       definition: {
         name: `Deploy ${
-          this.namer?.stackDisplayName(node.uniqueId, stack) ??
-                    node.uniqueId
+          this.namer?.stackDisplayName(node.uniqueId, stack) ?? node.uniqueId
         }`,
         ...this.jobSettings,
         ...this.extendedJobSettings,
@@ -605,8 +584,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
         ...(this.stackProperties[stack.stackArtifactId]?.environment
           ? {
             environment:
-                              this.stackProperties[stack.stackArtifactId]
-                                .environment,
+                this.stackProperties[stack.stackArtifactId].environment,
           }
           : {}),
         needs: this.renderDependencies(node),
@@ -646,14 +624,14 @@ export class MasonGitHubWorkflow extends PipelineBase {
     const cdkOut = step.outputs[0];
 
     const installSteps =
-            step.installCommands.length > 0
-              ? [
-                {
-                  name: 'Install',
-                  run: step.installCommands.join('\n'),
-                },
-              ]
-              : [];
+      step.installCommands.length > 0
+        ? [
+          {
+            name: 'Install',
+            run: step.installCommands.join('\n'),
+          },
+        ]
+        : [];
 
     return {
       id: node.uniqueId,
@@ -688,18 +666,15 @@ export class MasonGitHubWorkflow extends PipelineBase {
   }
 
   /**
-     * Searches for the stack that produced the output via the current
-     * job's dependencies.
-     *
-     * This function should always find a stack, since it is guaranteed
-     * that a CfnOutput comes from a referenced stack.
-     */
+   * Searches for the stack that produced the output via the current
+   * job's dependencies.
+   *
+   * This function should always find a stack, since it is guaranteed
+   * that a CfnOutput comes from a referenced stack.
+   */
   private findStackOfOutput(ref: StackOutputReference, node: AGraphNode) {
     for (const dep of node.allDeps) {
-      if (
-        dep.data?.type === 'execute' &&
-                ref.isProducedBy(dep.data.stack)
-      ) {
+      if (dep.data?.type === 'execute' && ref.isProducedBy(dep.data.stack)) {
         return dep.uniqueId;
       }
     }
@@ -726,7 +701,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
         stepId: 'Deploy',
       });
       envVariables[envName] =
-                `\${{ needs.${jobId}.outputs.${ref.outputName} }}`;
+        `\${{ needs.${jobId}.outputs.${ref.outputName} }}`;
     }
 
     const downloadInputs = new Array<JobStep>();
@@ -753,14 +728,14 @@ export class MasonGitHubWorkflow extends PipelineBase {
     }
 
     const installSteps =
-            step.installCommands.length > 0
-              ? [
-                {
-                  name: 'Install',
-                  run: step.installCommands.join('\n'),
-                },
-              ]
-              : [];
+      step.installCommands.length > 0
+        ? [
+          {
+            name: 'Install',
+            run: step.installCommands.join('\n'),
+          },
+        ]
+        : [];
 
     return {
       id: node.uniqueId,
@@ -873,6 +848,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
         uses: 'actions/checkout@v3',
         with: {
           ref: SHA_STRING,
+          submodules: 'recursive',
         },
       },
     ];
@@ -934,13 +910,13 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
 interface Context {
   /**
-     * The pipeline graph.
-     */
+   * The pipeline graph.
+   */
   readonly structure: PipelineGraph;
 
   /**
-     * Name of cloud assembly directory.
-     */
+   * Name of cloud assembly directory.
+   */
   readonly assemblyDir: string;
 }
 
