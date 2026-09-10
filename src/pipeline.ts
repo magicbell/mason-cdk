@@ -499,7 +499,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
             name: 'Setup Node',
             uses: 'actions/setup-node@v4',
             with: {
-              'node-version-file': '.node-version',
+              'node-version-file': '.tool-versions',
             },
           },
           ...this.stepsToConfigureAws(this.publishAssetsAuthRegion),
