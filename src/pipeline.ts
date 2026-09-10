@@ -709,7 +709,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
     for (const input of step.inputs) {
       downloadInputs.push({
-        uses: 'actions/download-artifact@v2',
+        uses: 'actions/download-artifact@v4',
         with: {
           name: input.fileSet.id,
           path: input.directory,
@@ -719,7 +719,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
 
     for (const output of step.outputs) {
       uploadOutputs.push({
-        uses: 'actions/upload-artifact@v2.1.1',
+        uses: 'actions/upload-artifact@v4',
         with: {
           name: output.fileSet.id,
           path: output.directory,
@@ -832,7 +832,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     return [
       {
         name: `Restore Cache ${CDKOUT_ARTIFACT}`,
-        uses: 'actions/cache@v3',
+        uses: 'actions/cache@v4',
         with: {
           key: `${CDKOUT_ARTIFACT}${CACHE_PREFIX}-${SHA_STRING}`,
           path: targetDir,
@@ -845,7 +845,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     return [
       {
         name: 'Checkout',
-        uses: 'actions/checkout@v3',
+        uses: 'actions/checkout@v4',
         with: {
           ref: SHA_STRING,
           submodules: 'recursive',
@@ -862,7 +862,7 @@ export class MasonGitHubWorkflow extends PipelineBase {
     return [
       {
         name: `Cache ${CDKOUT_ARTIFACT}`,
-        uses: 'actions/cache@v3',
+        uses: 'actions/cache@v4',
         with: {
           key: `${CDKOUT_ARTIFACT}${CACHE_PREFIX}-${SHA_STRING}`,
           path: dir,
