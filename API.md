@@ -4,6 +4,8 @@
 
 ### MasonGitHubWorkflow <a name="MasonGitHubWorkflow" id="@magicbell/mason.MasonGitHubWorkflow"></a>
 
+- *Implements:* constructs.IConstruct, constructs.IDependable
+
 CDK Pipelines for GitHub workflows.
 
 #### Initializers <a name="Initializers" id="@magicbell/mason.MasonGitHubWorkflow.Initializer"></a>
